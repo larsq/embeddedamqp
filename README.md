@@ -20,5 +20,3 @@ but where a real message broker cannot be installed or run.
 Clone this repository. This is utterly dependent of another project (springparent). The
 main project will only import spring dependencies which is not necessarily needed and 
 could easily be manually replaced with direct imports (TODO)
-
-local.laer.app.spring.embeddedam
