@@ -22,32 +22,30 @@
  * THE SOFTWARE.
  */
 
-package local.laer.app.spring.embeddedampq;
+package local.laer.app.spring.embeddedamqp;
 
+import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.Consumer;
+import com.rabbitmq.client.Envelope;
 import java.io.IOException;
 
 /**
- *
+ * Concrete implementation of a subscription with the {@link Consumer} as
+ * callback interface. 
  * @author Lars Eriksson (larsq.eriksson@gmail.com)
  */
-abstract class AbstractExchangeRouter {
-
-        protected final SimpleAmqpMessageContainer container;
-        protected final String type;
-
-        public AbstractExchangeRouter(SimpleAmqpMessageContainer container, String type) {
-            this.type = type;
-            this.container = container;
-        }
-
-        public abstract void route(ExchangeWrapper exchangeWrapper, String routingKey, Message message) throws IOException;
-
-        public ExchangeWrapper create(String name) {
-            return new ExchangeWrapper(name, this);
-        }
-
-        public String getType() {
-            return type;
-        }
-
+class ConsumerSubscription extends AbstractSubscription<Consumer>{
+    ConsumerSubscription(ChannelWrapper owner, String tag, Consumer instance) {
+        super(owner, tag, instance);
     }
+
+    /**
+     * 
+     * @param message the message to be delivered to the consumer
+     * @throws IOException
+     */
+    @Override
+    void onMessage(Message message) throws IOException {
+        instance().handleDelivery(tag(), message.getEnvelope(), message.getBasicProperties(), message.getPayload());    
+    }
+}
