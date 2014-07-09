@@ -22,55 +22,67 @@
  * THE SOFTWARE.
  */
 
-package local.laer.app.spring.embeddedampq;
+package local.laer.app.spring.embeddedamqp;
 
-import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.Envelope;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
- *
+ * Internal representation of a message. Structure is immutable. This is used
+ * for storing the message that cannot be delivered at once.
  * @author Lars Eriksson (larsq.eriksson@gmail.com)
  */
-class ChannelWrapper implements Comparable<ChannelWrapper> {
-    private final int channelNumber;
+class Message implements Comparable<Message> {
+    private final Envelope envelope;
+    private final byte[] payload;
+    private final AMQP.BasicProperties basicProperties;
 
-    public static ChannelWrapper wrap(Channel channel) {
-        return new ChannelWrapper(channel.getChannelNumber());
-    }
-    
-    public ChannelWrapper(int channelNumber) {
-        this.channelNumber = channelNumber;
+    Message(Envelope envelope, byte[] payload, AMQP.BasicProperties basicProperties) {
+        this.envelope = envelope;
+        this.payload = payload;
+        this.basicProperties = basicProperties;
     }
 
-    public int getChannelNumber() {
-        return channelNumber;
+    public AMQP.BasicProperties getBasicProperties() {
+        return basicProperties;
+    }
+
+    public Envelope getEnvelope() {
+        return envelope;
+    }
+
+    public byte[] getPayload() {
+        return payload;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || obj == this) {
+        if(obj == null || obj == this) {
             return obj == this;
         }
-        if (!getClass().equals(obj.getClass())) {
+        
+        if(!Objects.equals(getClass(), obj.getClass())) {
             return false;
         }
-        ChannelWrapper other = getClass().cast(obj);
-        return channelNumber == other.channelNumber;
+        
+        Message other = getClass().cast(obj);
+        
+        return Objects.equals(deliveryTag(), other.deliveryTag());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(channelNumber);
-    }
-
-    @Override
-    public int compareTo(ChannelWrapper o) {
-        return Integer.compare(channelNumber, o.channelNumber);
-    }
-
-    @Override
-    public String toString() {
-        return String.format("%s{%s}", getClass().getSimpleName(), channelNumber);
+        return Objects.hash(deliveryTag());
     }
     
+    private Long deliveryTag() {
+        return Optional.ofNullable(envelope).map(Envelope::getDeliveryTag).orElse(null);
+    }
+    
+    @Override
+    public int compareTo(Message o) {
+        return Long.compare(deliveryTag(), o.deliveryTag());
+    }
 }

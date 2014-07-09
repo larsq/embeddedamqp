@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package local.laer.app.spring.embeddedampq;
+package local.laer.app.spring.embeddedamqp;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -52,7 +52,7 @@ import java.util.function.Predicate;
 import static java.util.function.Predicate.isEqual;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-import static local.laer.app.spring.embeddedampq.ExceptionSuppliers.Exception;
+import static local.laer.app.spring.embeddedamqp.ExceptionSuppliers.Exception;
 import local.laer.app.support.ClassStructureWalker;
 import local.laer.app.support.Predicates;
 import static local.laer.app.support.Predicates.Entry.key;

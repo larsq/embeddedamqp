@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package local.laer.app.spring.embeddedampq;
+package local.laer.app.spring.embeddedamqp;
 
 import com.rabbitmq.client.GetResponse;
 import java.util.Optional;

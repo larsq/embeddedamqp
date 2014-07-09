@@ -22,51 +22,32 @@
  * THE SOFTWARE.
  */
 
-package local.laer.app.spring.embeddedampq;
+package local.laer.app.spring.embeddedamqp;
 
-import com.google.common.collect.Ordering;
-import java.util.Objects;
+import java.io.IOException;
 
 /**
- * Internal class that encapsulates the exchange and a router strategy. 
+ *
  * @author Lars Eriksson (larsq.eriksson@gmail.com)
  */
-class ExchangeWrapper implements Comparable<ExchangeWrapper> {
-    final String name;
-    final AbstractExchangeRouter router;
+abstract class AbstractExchangeRouter {
 
-    public <E extends AbstractExchangeRouter> ExchangeWrapper(String name, E exchange) {
-        this.name = name;
-        this.router = exchange;
-    }
+        protected final SimpleAmqpMessageContainer container;
+        protected final String type;
 
-    AbstractExchangeRouter exchange() {
-        return router;
-    }
-
-    String name() {
-        return name;
-    }
-
-    @Override
-    public int compareTo(ExchangeWrapper o) {
-        return Ordering.natural().nullsFirst().compare(name(), o.name());
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null || obj == this) {
-            return obj == this;
+        public AbstractExchangeRouter(SimpleAmqpMessageContainer container, String type) {
+            this.type = type;
+            this.container = container;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        return Objects.equals(name(), getClass().cast(obj).name());
-    }
 
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(name());
+        public abstract void route(ExchangeWrapper exchangeWrapper, String routingKey, Message message) throws IOException;
+
+        public ExchangeWrapper create(String name) {
+            return new ExchangeWrapper(name, this);
+        }
+
+        public String getType() {
+            return type;
+        }
+
     }
-    
-}

@@ -22,67 +22,51 @@
  * THE SOFTWARE.
  */
 
-package local.laer.app.spring.embeddedampq;
+package local.laer.app.spring.embeddedamqp;
 
-import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Envelope;
+import com.google.common.collect.Ordering;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
- * Internal representation of a message. Structure is immutable. This is used
- * for storing the message that cannot be delivered at once.
+ * Internal class that encapsulates the exchange and a router strategy. 
  * @author Lars Eriksson (larsq.eriksson@gmail.com)
  */
-class Message implements Comparable<Message> {
-    private final Envelope envelope;
-    private final byte[] payload;
-    private final AMQP.BasicProperties basicProperties;
+class ExchangeWrapper implements Comparable<ExchangeWrapper> {
+    final String name;
+    final AbstractExchangeRouter router;
 
-    Message(Envelope envelope, byte[] payload, AMQP.BasicProperties basicProperties) {
-        this.envelope = envelope;
-        this.payload = payload;
-        this.basicProperties = basicProperties;
+    public <E extends AbstractExchangeRouter> ExchangeWrapper(String name, E exchange) {
+        this.name = name;
+        this.router = exchange;
     }
 
-    public AMQP.BasicProperties getBasicProperties() {
-        return basicProperties;
+    AbstractExchangeRouter exchange() {
+        return router;
     }
 
-    public Envelope getEnvelope() {
-        return envelope;
+    String name() {
+        return name;
     }
 
-    public byte[] getPayload() {
-        return payload;
+    @Override
+    public int compareTo(ExchangeWrapper o) {
+        return Ordering.natural().nullsFirst().compare(name(), o.name());
     }
 
     @Override
     public boolean equals(Object obj) {
-        if(obj == null || obj == this) {
+        if (obj == null || obj == this) {
             return obj == this;
         }
-        
-        if(!Objects.equals(getClass(), obj.getClass())) {
+        if (getClass() != obj.getClass()) {
             return false;
         }
-        
-        Message other = getClass().cast(obj);
-        
-        return Objects.equals(deliveryTag(), other.deliveryTag());
+        return Objects.equals(name(), getClass().cast(obj).name());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(deliveryTag());
+        return Objects.hashCode(name());
     }
     
-    private Long deliveryTag() {
-        return Optional.ofNullable(envelope).map(Envelope::getDeliveryTag).orElse(null);
-    }
-    
-    @Override
-    public int compareTo(Message o) {
-        return Long.compare(deliveryTag(), o.deliveryTag());
-    }
 }

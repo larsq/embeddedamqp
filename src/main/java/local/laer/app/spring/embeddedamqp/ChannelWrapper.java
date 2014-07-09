@@ -22,30 +22,55 @@
  * THE SOFTWARE.
  */
 
-package local.laer.app.spring.embeddedampq;
+package local.laer.app.spring.embeddedamqp;
 
-import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Consumer;
-import com.rabbitmq.client.Envelope;
-import java.io.IOException;
+import com.rabbitmq.client.Channel;
+import java.util.Objects;
 
 /**
- * Concrete implementation of a subscription with the {@link Consumer} as
- * callback interface. 
+ *
  * @author Lars Eriksson (larsq.eriksson@gmail.com)
  */
-class ConsumerSubscription extends AbstractSubscription<Consumer>{
-    ConsumerSubscription(ChannelWrapper owner, String tag, Consumer instance) {
-        super(owner, tag, instance);
+class ChannelWrapper implements Comparable<ChannelWrapper> {
+    private final int channelNumber;
+
+    public static ChannelWrapper wrap(Channel channel) {
+        return new ChannelWrapper(channel.getChannelNumber());
+    }
+    
+    public ChannelWrapper(int channelNumber) {
+        this.channelNumber = channelNumber;
     }
 
-    /**
-     * 
-     * @param message the message to be delivered to the consumer
-     * @throws IOException
-     */
-    @Override
-    void onMessage(Message message) throws IOException {
-        instance().handleDelivery(tag(), message.getEnvelope(), message.getBasicProperties(), message.getPayload());    
+    public int getChannelNumber() {
+        return channelNumber;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || obj == this) {
+            return obj == this;
+        }
+        if (!getClass().equals(obj.getClass())) {
+            return false;
+        }
+        ChannelWrapper other = getClass().cast(obj);
+        return channelNumber == other.channelNumber;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(channelNumber);
+    }
+
+    @Override
+    public int compareTo(ChannelWrapper o) {
+        return Integer.compare(channelNumber, o.channelNumber);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s{%s}", getClass().getSimpleName(), channelNumber);
+    }
+    
 }

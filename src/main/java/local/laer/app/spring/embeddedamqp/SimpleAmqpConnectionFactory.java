@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package local.laer.app.spring.embeddedampq;
+package local.laer.app.spring.embeddedamqp;
 
 import com.google.common.collect.ImmutableMap;
 import com.rabbitmq.client.AMQP;
