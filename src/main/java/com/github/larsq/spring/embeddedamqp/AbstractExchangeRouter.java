@@ -27,27 +27,26 @@ package com.github.larsq.spring.embeddedamqp;
 import java.io.IOException;
 
 /**
- *
  * @author Lars Eriksson (larsq.eriksson@gmail.com)
  */
 abstract class AbstractExchangeRouter {
 
-        protected final SimpleAmqpMessageContainer container;
-        protected final String type;
+	protected final SimpleAmqpMessageContainer container;
+	protected final String type;
 
-        public AbstractExchangeRouter(SimpleAmqpMessageContainer container, String type) {
-            this.type = type;
-            this.container = container;
-        }
+	public AbstractExchangeRouter(SimpleAmqpMessageContainer container, String type) {
+		this.type = type;
+		this.container = container;
+	}
 
-        public abstract void route(ExchangeWrapper exchangeWrapper, String routingKey, Message message) throws IOException;
+	public abstract void route(ExchangeWrapper exchangeWrapper, String routingKey, Message message) throws IOException;
 
-        public ExchangeWrapper create(String name) {
-            return new ExchangeWrapper(name, this);
-        }
+	public ExchangeWrapper create(String name) {
+		return new ExchangeWrapper(name, this);
+	}
 
-        public String getType() {
-            return type;
-        }
+	public String getType() {
+		return type;
+	}
 
-    }
+}

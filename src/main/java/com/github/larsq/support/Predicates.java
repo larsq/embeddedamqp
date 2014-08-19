@@ -31,73 +31,71 @@ import java.util.regex.Pattern;
 import java.util.stream.StreamSupport;
 
 /**
- *
  * @author lars
  */
 public interface Predicates {
-    static <T,S> Predicate<S> casted(Predicate<T> predicate) {
-        return s-> predicate.test((T) s);
-    }
-    
-    static <T, S> Predicate<T> compose(Predicate<S> predicate, Function<T, S> fn) {
-        return t -> predicate.test(fn.apply(t));
-    }
+	static <T, S> Predicate<S> casted(Predicate<T> predicate) {
+		return s -> predicate.test((T) s);
+	}
 
-    static <T> Predicate<T> isNotNull() {
-        return t -> t != null;
-    }
+	static <T, S> Predicate<T> compose(Predicate<S> predicate, Function<T, S> fn) {
+		return t -> predicate.test(fn.apply(t));
+	}
 
-    static <T> Predicate<Optional<T>> optional(Predicate<T> predicate, boolean ifEmpty) {
-        return t -> (t.isPresent()) ? predicate.test(t.get()) : ifEmpty;
-    }
-    
-    
+	static <T> Predicate<T> isNotNull() {
+		return t -> t != null;
+	}
 
-    interface Iterables {
+	static <T> Predicate<Optional<T>> optional(Predicate<T> predicate, boolean ifEmpty) {
+		return t -> (t.isPresent()) ? predicate.test(t.get()) : ifEmpty;
+	}
 
-        static <T extends Iterable<?>> Predicate<T> isNonEmpty() {
-            return t -> !com.google.common.collect.Iterables.isEmpty(t);
-        }
 
-        static <T extends Iterable<?>> Predicate<T> collectionOfSize(Predicate<Integer> predicate) {
-            return t -> predicate.test(com.google.common.collect.Iterables.size(t));
-        }
-        
-        static <T extends Iterable<?>> Predicate<T> allInstanceOf(Class<?> clz) {
-            return iter->StreamSupport.stream(iter.spliterator(), false)
-                    .allMatch(item->clz.isInstance(item));
-        }
-    }
+	interface Iterables {
 
-    interface Entry {
+		static <T extends Iterable<?>> Predicate<T> isNonEmpty() {
+			return t -> !com.google.common.collect.Iterables.isEmpty(t);
+		}
 
-        static <K, V> Predicate<Map.Entry<K, V>> key(Predicate<K> predicate) {
-            return e -> predicate.test(e.getKey());
-        }
+		static <T extends Iterable<?>> Predicate<T> collectionOfSize(Predicate<Integer> predicate) {
+			return t -> predicate.test(com.google.common.collect.Iterables.size(t));
+		}
 
-        static <K, V> Predicate<Map.Entry<K, V>> value(Predicate<V> predicate) {
-            return e -> predicate.test(e.getValue());
-        }
-    }
+		static <T extends Iterable<?>> Predicate<T> allInstanceOf(Class<?> clz) {
+			return iter -> StreamSupport.stream(iter.spliterator(), false)
+					.allMatch(item -> clz.isInstance(item));
+		}
+	}
 
-    interface String {
+	interface Entry {
 
-        static <STR extends CharSequence> Predicate<STR> matches(Pattern pattern) {
-            return str -> pattern.matcher(str).matches();
-        }
-    }
+		static <K, V> Predicate<Map.Entry<K, V>> key(Predicate<K> predicate) {
+			return e -> predicate.test(e.getKey());
+		}
 
-    interface Object {
-        static <T> Predicate<T> untyped(Predicate<Object> predicate) {
-            return t-> predicate.test((Object) t);
-        }
-        
-        static <T> Predicate<java.lang.Object> typed(Predicate<T> predicate) {
-            return o -> predicate.test((T) o);
-        }
-        
-        static <T> Predicate<Object> instanceOf(Class<?> target) {
-            return target::isInstance;
-        }
-    }
+		static <K, V> Predicate<Map.Entry<K, V>> value(Predicate<V> predicate) {
+			return e -> predicate.test(e.getValue());
+		}
+	}
+
+	interface String {
+
+		static <STR extends CharSequence> Predicate<STR> matches(Pattern pattern) {
+			return str -> pattern.matcher(str).matches();
+		}
+	}
+
+	interface Object {
+		static <T> Predicate<T> untyped(Predicate<java.lang.Object> predicate) {
+			return t -> predicate.test((java.lang.Object) t);
+		}
+
+		static <T> Predicate<java.lang.Object> typed(Predicate<T> predicate) {
+			return o -> predicate.test((T) o);
+		}
+
+		static <T> Predicate<java.lang.Object> instanceOf(Class<?> target) {
+			return target::isInstance;
+		}
+	}
 }

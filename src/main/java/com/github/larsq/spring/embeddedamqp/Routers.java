@@ -23,7 +23,15 @@
  */
 package com.github.larsq.spring.embeddedamqp;
 
+import com.github.larsq.support.Predicates;
+import com.github.larsq.support.SuppressedThrowable;
 import com.rabbitmq.client.AMQP;
+import org.jooq.lambda.Unchecked;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.ExchangeTypes;
+import org.springframework.amqp.core.Queue;
+
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -33,161 +41,151 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import com.github.larsq.support.Predicates;
-import com.github.larsq.support.SuppressedThrowable;
-import org.jooq.lambda.Unchecked;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.ExchangeTypes;
-import org.springframework.amqp.core.Queue;
 
 /**
- *
  * @author Lars Eriksson (larsq.eriksson@gmail.com) private static final ExceptionSuppliers exceptions = new ExceptionSuppliers();
-    
-   
  */
 class Routers {
-    private final static Logger LOG = LoggerFactory.getLogger(Routers.class.getPackage().getName());
-    private final static Supplier<SuppressedThrowable<IOException>> IOException = ()->SuppressedThrowable.wrap(IOException.class);
-    
-    static class HeadersExchangeRouter extends AbstractExchangeRouter {
+	private final static Logger LOG = LoggerFactory.getLogger(Routers.class.getPackage().getName());
+	private final static Supplier<SuppressedThrowable<IOException>> IOException = () -> SuppressedThrowable.wrap(IOException.class);
 
-        private final static Logger LOG = LoggerFactory.getLogger(HeadersExchangeRouter.class.getPackage().getName());
+	static class HeadersExchangeRouter extends AbstractExchangeRouter {
 
-        HeadersExchangeRouter(SimpleAmqpMessageContainer container) {
-            super(container, ExchangeTypes.HEADERS);
-        }
+		private final static Logger LOG = LoggerFactory.getLogger(HeadersExchangeRouter.class.getPackage().getName());
 
-        protected boolean containsKeyValue(AMQP.BasicProperties properties, String key, Object value) {
-            Field field = Arrays.stream(properties.getClass().getDeclaredFields())
-                    .filter(f -> Objects.equals(f.getName(), key))
-                    .findFirst()
-                    .orElse(null);
+		HeadersExchangeRouter(SimpleAmqpMessageContainer container) {
+			super(container, ExchangeTypes.HEADERS);
+		}
 
-            if (field != null) {
-                if (!field.isAccessible()) {
-                    field.setAccessible(true);
-                }
+		protected boolean containsKeyValue(AMQP.BasicProperties properties, String key, Object value) {
+			Field field = Arrays.stream(properties.getClass().getDeclaredFields())
+					.filter(f -> Objects.equals(f.getName(), key))
+					.findFirst()
+					.orElse(null);
 
-                try {
-                    return Objects.equals(field.get(properties), value);
-                } catch (IllegalArgumentException | IllegalAccessException ex) {
-                    throw new RuntimeException(ex);
-                }
-            }
+			if (field != null) {
+				if (!field.isAccessible()) {
+					field.setAccessible(true);
+				}
 
-            if (properties.getHeaders() == null) {
-                return false;
-            }
+				try {
+					return Objects.equals(field.get(properties), value);
+				} catch (IllegalArgumentException | IllegalAccessException ex) {
+					throw new RuntimeException(ex);
+				}
+			}
 
-            return Objects.equals(properties.getHeaders().get(key), value);
-        }
+			if (properties.getHeaders() == null) {
+				return false;
+			}
 
-        protected Predicate<SimpleAmqpMessageContainer.Binding> matchesHeader(AMQP.BasicProperties properties) {
-            return b -> b.getArguments().entrySet().stream()
-                    .allMatch(e -> containsKeyValue(properties, e.getKey(), e.getValue()));
-        }
+			return Objects.equals(properties.getHeaders().get(key), value);
+		}
 
-        @Override
-        public void route(ExchangeWrapper exchangeWrapper, String routingKey, Message message) throws IOException {
-            final SuppressedThrowable<IOException> suppressed = IOException.get();
-            
-            container.bindings(exchangeWrapper).stream()
-                    .filter(matchesHeader(message.getBasicProperties()))
-                    .forEach(Unchecked.consumer(b -> container.route(routingKey, b, message), suppressed));
-            
-            suppressed.check();
-        }
+		protected Predicate<SimpleAmqpMessageContainer.Binding> matchesHeader(AMQP.BasicProperties properties) {
+			return b -> b.getArguments().entrySet().stream()
+					.allMatch(e -> containsKeyValue(properties, e.getKey(), e.getValue()));
+		}
 
-    }
+		@Override
+		public void route(ExchangeWrapper exchangeWrapper, String routingKey, Message message) throws IOException {
+			final SuppressedThrowable<IOException> suppressed = IOException.get();
 
-    static class FanoutExchangeRouter extends AbstractExchangeRouter {
+			container.bindings(exchangeWrapper).stream()
+					.filter(matchesHeader(message.getBasicProperties()))
+					.forEach(Unchecked.consumer(b -> container.route(routingKey, b, message), suppressed));
 
-        private final static Logger LOG = LoggerFactory.getLogger(HeadersExchangeRouter.class.getPackage().getName());
+			suppressed.check();
+		}
 
-        FanoutExchangeRouter(SimpleAmqpMessageContainer container) {
-            super(container, ExchangeTypes.FANOUT);
-        }
+	}
 
-        @Override
-        public void route(ExchangeWrapper exchangeWrapper, String routingKey, Message message) throws IOException {
-            LOG.debug("routing fanout {}", exchangeWrapper.name);
-            
-            final SuppressedThrowable<IOException> suppressed = IOException.get();
- 
-            container.bindings(exchangeWrapper).stream()
-                    .forEach(Unchecked.consumer(b -> container.route(routingKey, b, message), suppressed));
-        
-            suppressed.check();
-        }
+	static class FanoutExchangeRouter extends AbstractExchangeRouter {
 
-    }
+		private final static Logger LOG = LoggerFactory.getLogger(HeadersExchangeRouter.class.getPackage().getName());
 
-    static class DirectExchangeRouter extends AbstractExchangeRouter {
+		FanoutExchangeRouter(SimpleAmqpMessageContainer container) {
+			super(container, ExchangeTypes.FANOUT);
+		}
 
-        private final static Logger LOG = LoggerFactory.getLogger(HeadersExchangeRouter.class.getPackage().getName());
+		@Override
+		public void route(ExchangeWrapper exchangeWrapper, String routingKey, Message message) throws IOException {
+			LOG.debug("routing fanout {}", exchangeWrapper.name);
 
-        public DirectExchangeRouter(SimpleAmqpMessageContainer container) {
-            super(container, ExchangeTypes.DIRECT);
-        }
+			final SuppressedThrowable<IOException> suppressed = IOException.get();
 
-        @Override
-        public void route(ExchangeWrapper exchangeWrapper, String routingKey, Message message) throws IOException {
-            final SuppressedThrowable<IOException> suppressed = IOException.get();
+			container.bindings(exchangeWrapper).stream()
+					.forEach(Unchecked.consumer(b -> container.route(routingKey, b, message), suppressed));
 
-            container.bindings(exchangeWrapper).stream()
-                    .filter(b -> Objects.equals(b.getRoutingKey(), routingKey))
-                    .forEach(Unchecked.consumer(b -> container.route(routingKey, b, message), suppressed));
-        
-            suppressed.check();
-        }
-    }
+			suppressed.check();
+		}
 
-    static class TopicExchangeRouter extends AbstractExchangeRouter {
-        private final static Logger LOG = LoggerFactory.getLogger(HeadersExchangeRouter.class.getPackage().getName());
+	}
 
-        TopicExchangeRouter(SimpleAmqpMessageContainer container) {
-            super(container, ExchangeTypes.TOPIC);
-        }
+	static class DirectExchangeRouter extends AbstractExchangeRouter {
 
-        private Pattern translatePattern(String queuePattern) throws IOException {
-            final String startsWithPoundQueueuPattern = "^#+";
-            final String escapeDotQueuePattern = "[.](?!\\])";
-            final String esacpeDotRegExpPattern = "[.]";
-            final String poundQueuePattern = "\\.?#+";  //any dot before the pound must be removed
-            final String starQueuePattern = "[*]+";
-            final String starRegexpPattern = "[^.]+";
-            final String poundRegexpPattern = "([.][^.]+)*";
-            final String startsWithPoundRegexpPattern = "[^.]+" + poundRegexpPattern;
+		private final static Logger LOG = LoggerFactory.getLogger(HeadersExchangeRouter.class.getPackage().getName());
 
-            String regexpPattern = queuePattern
-                    .replaceAll(starQueuePattern, starRegexpPattern)
-                    .replaceAll(startsWithPoundQueueuPattern, startsWithPoundRegexpPattern)
-                    .replaceAll(poundQueuePattern, poundRegexpPattern)
-                    .replaceAll(escapeDotQueuePattern, esacpeDotRegExpPattern);
+		public DirectExchangeRouter(SimpleAmqpMessageContainer container) {
+			super(container, ExchangeTypes.DIRECT);
+		}
 
-            LOG.debug("effective pattern {} : {}", queuePattern, regexpPattern);
+		@Override
+		public void route(ExchangeWrapper exchangeWrapper, String routingKey, Message message) throws IOException {
+			final SuppressedThrowable<IOException> suppressed = IOException.get();
 
-            try {
-                Pattern pattern = Pattern.compile(regexpPattern);
-                return pattern;
-            } catch (PatternSyntaxException e) {
-                throw new IOException("topic pattern is not valid", e);
-            }
-        }
+			container.bindings(exchangeWrapper).stream()
+					.filter(b -> Objects.equals(b.getRoutingKey(), routingKey))
+					.forEach(Unchecked.consumer(b -> container.route(routingKey, b, message), suppressed));
 
-        @Override
-        public void route(ExchangeWrapper exchangeWrapper, String routingKey, Message message) throws IOException {
-            final SuppressedThrowable<IOException> suppressed = IOException.get();
- 
-            Pattern p = translatePattern(routingKey);
+			suppressed.check();
+		}
+	}
 
-            Set<String> availableQueues = container.availableQueues();
-            
-            availableQueues.stream()
-                    .filter(Predicates.String.matches(p))
-                    .forEach(Unchecked.consumer(str -> container.route(new Queue(str), message), suppressed));
-        }
-    }
+	static class TopicExchangeRouter extends AbstractExchangeRouter {
+		private final static Logger LOG = LoggerFactory.getLogger(HeadersExchangeRouter.class.getPackage().getName());
+
+		TopicExchangeRouter(SimpleAmqpMessageContainer container) {
+			super(container, ExchangeTypes.TOPIC);
+		}
+
+		private Pattern translatePattern(String queuePattern) throws IOException {
+			final String startsWithPoundQueueuPattern = "^#+";
+			final String escapeDotQueuePattern = "[.](?!\\])";
+			final String esacpeDotRegExpPattern = "[.]";
+			final String poundQueuePattern = "\\.?#+";  //any dot before the pound must be removed
+			final String starQueuePattern = "[*]+";
+			final String starRegexpPattern = "[^.]+";
+			final String poundRegexpPattern = "([.][^.]+)*";
+			final String startsWithPoundRegexpPattern = "[^.]+" + poundRegexpPattern;
+
+			String regexpPattern = queuePattern
+					.replaceAll(starQueuePattern, starRegexpPattern)
+					.replaceAll(startsWithPoundQueueuPattern, startsWithPoundRegexpPattern)
+					.replaceAll(poundQueuePattern, poundRegexpPattern)
+					.replaceAll(escapeDotQueuePattern, esacpeDotRegExpPattern);
+
+			LOG.debug("effective pattern {} : {}", queuePattern, regexpPattern);
+
+			try {
+				Pattern pattern = Pattern.compile(regexpPattern);
+				return pattern;
+			} catch (PatternSyntaxException e) {
+				throw new IOException("topic pattern is not valid", e);
+			}
+		}
+
+		@Override
+		public void route(ExchangeWrapper exchangeWrapper, String routingKey, Message message) throws IOException {
+			final SuppressedThrowable<IOException> suppressed = IOException.get();
+
+			Pattern p = translatePattern(routingKey);
+
+			Set<String> availableQueues = container.availableQueues();
+
+			availableQueues.stream()
+					.filter(Predicates.String.matches(p))
+					.forEach(Unchecked.consumer(str -> container.route(new Queue(str), message), suppressed));
+		}
+	}
 }

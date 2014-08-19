@@ -27,38 +27,37 @@ package com.github.larsq.support;
 import java.util.function.Consumer;
 
 /**
- *
- * @author Lars Eriksson (larsq.eriksson@gmail.com)
  * @param <X>
+ * @author Lars Eriksson (larsq.eriksson@gmail.com)
  */
 public class SuppressedThrowable<X extends Throwable> implements Consumer<Throwable> {
-    private final Class<X> checked;
-    private X throwable;
-    
-    public SuppressedThrowable(Class<X> checked) {
-        this.checked = checked;
-    }
+	private final Class<X> checked;
+	private X throwable;
 
-    @Override
-    public void accept(Throwable t) {
-        if(checked.isAssignableFrom(t.getClass())) {
-            this.throwable = checked.cast(t);
-        }
-    }
-    
-    public void check() throws X {
-        if(throwable == null) {
-            return;
-        }
-        
-        throw throwable;
-    }
+	public SuppressedThrowable(Class<X> checked) {
+		this.checked = checked;
+	}
 
-    public X getThrowable() {
-        return throwable;
-    }
-    
-    public static <X extends Throwable> SuppressedThrowable<X> wrap(Class<X> clz) {
-        return new SuppressedThrowable<>(clz);
-    }
+	public static <X extends Throwable> SuppressedThrowable<X> wrap(Class<X> clz) {
+		return new SuppressedThrowable<>(clz);
+	}
+
+	@Override
+	public void accept(Throwable t) {
+		if (checked.isAssignableFrom(t.getClass())) {
+			this.throwable = checked.cast(t);
+		}
+	}
+
+	public void check() throws X {
+		if (throwable == null) {
+			return;
+		}
+
+		throw throwable;
+	}
+
+	public X getThrowable() {
+		return throwable;
+	}
 }

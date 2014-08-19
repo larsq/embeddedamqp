@@ -24,16 +24,12 @@
 
 package com.github.larsq.spring.embeddedampq;
 
+import com.github.larsq.spring.embeddedampq.support.AmqpMessageMatchers;
 import com.google.common.base.Charsets;
 import com.jayway.awaitility.Awaitility;
 import com.jayway.awaitility.Duration;
-import java.util.ArrayList;
-import java.util.List;
-import com.github.larsq.spring.embeddedampq.support.AmqpMessageMatchers;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
-import static org.hamcrest.Matchers.is;
-import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -50,6 +46,11 @@ import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.MessagingException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.hamcrest.Matchers.is;
 
 /**
  * The purpose with the text is to test if the mockup works in an Integration

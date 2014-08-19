@@ -22,53 +22,30 @@
  * THE SOFTWARE.
  */
 
-package com.github.larsq.spring.embeddedamqp;
+package com.github.larsq.spring.embeddedamqp.support;
 
-import com.google.common.collect.Ordering;
+import org.hamcrest.Matcher;
+import org.springframework.messaging.Message;
 
-import java.util.Objects;
+import static org.hamcrest.Matchers.*;
+import static org.springframework.integration.test.matcher.HeaderMatcher.hasHeader;
 
 /**
- * Internal class that encapsulates the exchange and a router strategy.
- *
  * @author Lars Eriksson (larsq.eriksson@gmail.com)
  */
-class ExchangeWrapper implements Comparable<ExchangeWrapper> {
-	final String name;
-	final AbstractExchangeRouter router;
-
-	public <E extends AbstractExchangeRouter> ExchangeWrapper(String name, E exchange) {
-		this.name = name;
-		this.router = exchange;
+public class AmqpMessageMatchers {
+	private AmqpMessageMatchers() {
 	}
 
-	AbstractExchangeRouter exchange() {
-		return router;
+	public static <T> Matcher<Message<?>> receivedExchange(Matcher<T> expected) {
+		return hasHeader("amqp_receivedExchange", is(expected));
 	}
 
-	String name() {
-		return name;
+	public static <T> Matcher<Message<?>> withRoutingKey(T expectedValue) {
+		return hasHeader("amqp_receivedRoutingKey", is(expectedValue));
 	}
 
-	@Override
-	public int compareTo(ExchangeWrapper o) {
-		return Ordering.natural().nullsFirst().compare(name(), o.name());
+	public static Matcher<Message<?>> withNoRoutingKey() {
+		return not(hasHeader("amqp_receivedRoutingKey", notNullValue()));
 	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (obj == null || obj == this) {
-			return obj == this;
-		}
-		if (getClass() != obj.getClass()) {
-			return false;
-		}
-		return Objects.equals(name(), getClass().cast(obj).name());
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hashCode(name());
-	}
-
 }

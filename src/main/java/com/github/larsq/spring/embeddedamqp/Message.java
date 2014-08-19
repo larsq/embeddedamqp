@@ -26,63 +26,65 @@ package com.github.larsq.spring.embeddedamqp;
 
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Envelope;
+
 import java.util.Objects;
 import java.util.Optional;
 
 /**
  * Internal representation of a message. Structure is immutable. This is used
  * for storing the message that cannot be delivered at once.
+ *
  * @author Lars Eriksson (larsq.eriksson@gmail.com)
  */
 class Message implements Comparable<Message> {
-    private final Envelope envelope;
-    private final byte[] payload;
-    private final AMQP.BasicProperties basicProperties;
+	private final Envelope envelope;
+	private final byte[] payload;
+	private final AMQP.BasicProperties basicProperties;
 
-    Message(Envelope envelope, byte[] payload, AMQP.BasicProperties basicProperties) {
-        this.envelope = envelope;
-        this.payload = payload;
-        this.basicProperties = basicProperties;
-    }
+	Message(Envelope envelope, byte[] payload, AMQP.BasicProperties basicProperties) {
+		this.envelope = envelope;
+		this.payload = payload;
+		this.basicProperties = basicProperties;
+	}
 
-    public AMQP.BasicProperties getBasicProperties() {
-        return basicProperties;
-    }
+	public AMQP.BasicProperties getBasicProperties() {
+		return basicProperties;
+	}
 
-    public Envelope getEnvelope() {
-        return envelope;
-    }
+	public Envelope getEnvelope() {
+		return envelope;
+	}
 
-    public byte[] getPayload() {
-        return payload;
-    }
+	public byte[] getPayload() {
+		return payload;
+	}
 
-    @Override
-    public boolean equals(Object obj) {
-        if(obj == null || obj == this) {
-            return obj == this;
-        }
-        
-        if(!Objects.equals(getClass(), obj.getClass())) {
-            return false;
-        }
-        
-        Message other = getClass().cast(obj);
-        
-        return Objects.equals(deliveryTag(), other.deliveryTag());
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null || obj == this) {
+			return obj == this;
+		}
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(deliveryTag());
-    }
-    
-    private Long deliveryTag() {
-        return Optional.ofNullable(envelope).map(Envelope::getDeliveryTag).orElse(null);
-    }
-    
-    @Override
-    public int compareTo(Message o) {
-        return Long.compare(deliveryTag(), o.deliveryTag());
-    }
+		if (!Objects.equals(getClass(), obj.getClass())) {
+			return false;
+		}
+
+		Message other = getClass().cast(obj);
+
+		return Objects.equals(deliveryTag(), other.deliveryTag());
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(deliveryTag());
+	}
+
+	private Long deliveryTag() {
+		return Optional.ofNullable(envelope).map(Envelope::getDeliveryTag).orElse(null);
+	}
+
+	@Override
+	public int compareTo(Message o) {
+		return Long.compare(deliveryTag(), o.deliveryTag());
+	}
 }

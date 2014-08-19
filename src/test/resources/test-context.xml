@@ -1,33 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:context="http://www.springframework.org/schema/context"
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:int="http://www.springframework.org/schema/integration"
        xmlns:int-amqp="http://www.springframework.org/schema/integration/amqp"
        xmlns:rabbit="http://www.springframework.org/schema/rabbit"
-       xsi:schemaLocation="
-            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
-            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+
             http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration-4.0.xsd
             http://www.springframework.org/schema/rabbit http://www.springframework.org/schema/rabbit/spring-rabbit-1.3.xsd
-            http://www.springframework.org/schema/integration/amqp http://www.springframework.org/schema/integration/amqp/spring-integration-amqp-4.0.xsd
-">
-    
-    <bean name="connectionFactory" class="local.laer.app.spring.embeddedampq.SimpleAmqpConnectionFactory">
-    </bean>
-  
-    <bean name="rabbitConnectionFactory" class="org.springframework.amqp.rabbit.connection.CachingConnectionFactory">
-        <constructor-arg index="0" ref="connectionFactory" type="com.rabbitmq.client.ConnectionFactory" /> 
-    </bean>
-        
-    <rabbit:admin id="admin" connection-factory="rabbitConnectionFactory" auto-startup="true"/>
-    
-    <rabbit:template id="template" connection-factory="rabbitConnectionFactory" />
+            http://www.springframework.org/schema/integration/amqp http://www.springframework.org/schema/integration/amqp/spring-integration-amqp-4.0.xsd"
+        >
 
-    <rabbit:queue name="fanout.0"  auto-declare="true" auto-delete="true" declared-by="admin"/>
-    <rabbit:queue name="fanout.1" auto-declare="true" auto-delete="true" declared-by="admin" />
-    <rabbit:queue name="direct.foo" auto-declare="true" auto-delete="true" declared-by="admin" />
-    <rabbit:queue name="direct.bar" auto-declare="true" auto-delete="true" declared-by="admin" />
+    <bean name="connectionFactory" class="com.github.larsq.spring.embeddedamqp.SimpleAmqpConnectionFactory">
+    </bean>
+
+    <bean name="rabbitConnectionFactory" class="org.springframework.amqp.rabbit.connection.CachingConnectionFactory">
+        <constructor-arg index="0" ref="connectionFactory" type="com.rabbitmq.client.ConnectionFactory"/>
+    </bean>
+
+    <rabbit:admin id="admin" connection-factory="rabbitConnectionFactory" auto-startup="true"/>
+
+    <rabbit:template id="template" connection-factory="rabbitConnectionFactory"/>
+
+    <rabbit:queue name="fanout.0" auto-declare="true" auto-delete="true" declared-by="admin"/>
+    <rabbit:queue name="fanout.1" auto-declare="true" auto-delete="true" declared-by="admin"/>
+    <rabbit:queue name="direct.foo" auto-declare="true" auto-delete="true" declared-by="admin"/>
+    <rabbit:queue name="direct.bar" auto-declare="true" auto-delete="true" declared-by="admin"/>
 
     <rabbit:fanout-exchange name="amqp.fanout" auto-declare="true" auto-delete="true" declared-by="admin">
         <rabbit:bindings>
@@ -35,7 +33,7 @@
             <rabbit:binding queue="fanout.1"/>
         </rabbit:bindings>
     </rabbit:fanout-exchange>
-    
+
     <rabbit:direct-exchange name="amqp.direct" auto-declare="true" auto-delete="true" declared-by="admin">
         <rabbit:bindings>
             <rabbit:binding key="foo" queue="direct.foo"/>
@@ -44,22 +42,23 @@
     </rabbit:direct-exchange>
 
 
-    <int:publish-subscribe-channel id="logChannel" />
-    
+    <int:publish-subscribe-channel id="logChannel"/>
+
     <int:publish-subscribe-channel id="errorChannel">
         <int:interceptors>
             <int:wire-tap channel="logChannel"/>
         </int:interceptors>
     </int:publish-subscribe-channel>
-    
+
     <int:publish-subscribe-channel id="request">
         <int:interceptors>
             <int:wire-tap channel="logChannel"/>
         </int:interceptors>
     </int:publish-subscribe-channel>
-    
-    <int:logging-channel-adapter channel="logChannel" log-full-message="true" logger-name="local.laer.integration"/>
-    
-    <int-amqp:inbound-channel-adapter channel="request" queue-names="fanout.0, fanout.1, direct.foo, direct.bar" mapped-request-headers="*" connection-factory="rabbitConnectionFactory" />
+
+    <int:logging-channel-adapter channel="logChannel" log-full-message="true" logger-name="com.github.integration"/>
+
+    <int-amqp:inbound-channel-adapter channel="request" queue-names="fanout.0, fanout.1, direct.foo, direct.bar"
+                                      mapped-request-headers="*" connection-factory="rabbitConnectionFactory"/>
 
 </beans>

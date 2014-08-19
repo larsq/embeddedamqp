@@ -25,58 +25,69 @@
 package com.github.larsq.spring.embeddedamqp;
 
 import com.rabbitmq.client.GetResponse;
+
 import java.util.Optional;
 
 /**
- *
  * @author Lars Eriksson (larsq.eriksson@gmail.com)
  */
 public class QueueInfo {
-    private final SimpleAmqpMessageContainer container;
-    private int messageCount;
-    private int consumerCount;
-    private final String queue;
+	private final SimpleAmqpMessageContainer container;
+	private final String queue;
+	private int messageCount;
+	private int consumerCount;
 
-    public QueueInfo(SimpleAmqpMessageContainer container, String queue) {
-        this.container = container;
-        this.queue = queue;
-        
-        QueueInfo.this.refresh();
-    }
-    
-    public String getQueue() {
-        return queue;
-    }
+	public QueueInfo(SimpleAmqpMessageContainer container, String queue) {
+		this.container = container;
+		this.queue = queue;
 
-    public int getMessageCount() {
-        return messageCount;
-    }
+		QueueInfo.this.refresh();
+	}
 
-    void refresh() {
-          messageCount = container.countUnread(queue);
-          consumerCount = container.countConsumers(queue);
-    }
-    public int getConsumerCount() {
-        return consumerCount;
-    }
+	public String getQueue() {
+		return queue;
+	}
 
-    void purge() {
-        container.purgeQueue(queue);
-    }
-    
+	public int getMessageCount() {
+		return messageCount;
+	}
 
-    Optional<GetResponse> receive() {
-        Optional<Message> optionalMessage = container.messages(queue).map(q->q.poll());
-        
-        if(!optionalMessage.isPresent()) {
-            return Optional.empty();
-        }
-        
-        Message m = optionalMessage.get();
-        
-        refresh();
-        
-        GetResponse response = new GetResponse(m.getEnvelope(), m.getBasicProperties(), m.getPayload(), messageCount);
-        return Optional.of(response);
-    }
+	void refresh() {
+		messageCount = container.countUnread(queue);
+		consumerCount = container.countConsumers(queue);
+	}
+
+	public int getConsumerCount() {
+		return consumerCount;
+	}
+
+	void purge() {
+		container.purgeQueue(queue);
+	}
+
+
+	Optional<GetResponse> receive() {
+		Optional<Message> optionalMessage = container.messages(queue).map(q -> q.poll());
+
+		if (!optionalMessage.isPresent()) {
+			return Optional.empty();
+		}
+
+		Message m = optionalMessage.get();
+
+		refresh();
+
+		GetResponse response = new GetResponse(m.getEnvelope(), m.getBasicProperties(), m.getPayload(), messageCount);
+		return Optional.of(response);
+	}
+
+	@Override
+	public String toString() {
+		return "QueueInfo{" +
+				"container=" + container +
+				", queue='" + queue + '\'' +
+				", messageCount=" + messageCount +
+				", consumerCount=" + consumerCount +
+				'}';
+	}
 }

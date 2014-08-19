@@ -26,66 +26,61 @@ package com.github.larsq.support;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.Stack;
+
+import java.util.*;
 import java.util.function.Function;
 
 /**
- *
  * @author lars
  */
 public class ClassStructureWalker {
-    private final Class<?> startAt;
-    private final boolean includeInterfaces;
-    private final boolean includeSuperClasses;
+	private final Class<?> startAt;
+	private final boolean includeInterfaces;
+	private final boolean includeSuperClasses;
 
-    public ClassStructureWalker(Class<?> startAt, boolean includeInterfaces, boolean includeSuperClasses) {
-        this.startAt = startAt;
-        this.includeInterfaces = includeInterfaces;
-        this.includeSuperClasses = includeSuperClasses;
-    }
-    
-    public <T> Iterable<T> traverseClassStructure(Function<Class<?>, Iterable<T>> fn) {
-        List<Iterable<T>> listOfIterables = new ArrayList<>();
-        
-       Set<Class<?>> set = buildClassSet(startAt);
-       
-       set.stream()
-               .map(fn)
-               .filter(Predicates.Iterables.isNonEmpty())
-               .forEach(listOfIterables::add);
-       
-       return Iterables.concat(listOfIterables);
-    }
-    
-    private Set<Class<?>> buildClassSet(Class<?> startAt) {
-        Set<Class<?>> setOfClasses = new HashSet<>();
-        
-        Stack<Class<?>> unvisited = new Stack<>();
-        unvisited.add(startAt);
-        while(!unvisited.isEmpty()) {
-            Class<?> current = unvisited.pop();
-            
-            setOfClasses.add(current);
-            
-            if(includeInterfaces) {
-                addInterfaces(current).forEach(clz->unvisited.push(clz));
-            }
-            
-            if(includeSuperClasses) {
-                Optional.ofNullable(current.getSuperclass())
-                        .ifPresent(unvisited::push);
-            }
-        }
-        
-        return setOfClasses;
-    }
+	public ClassStructureWalker(Class<?> startAt, boolean includeInterfaces, boolean includeSuperClasses) {
+		this.startAt = startAt;
+		this.includeInterfaces = includeInterfaces;
+		this.includeSuperClasses = includeSuperClasses;
+	}
 
-    private Set<Class<?>> addInterfaces(Class<?> clz) {
-        return Sets.newHashSet(clz.getInterfaces());
-    }
+	public <T> Iterable<T> traverseClassStructure(Function<Class<?>, Iterable<T>> fn) {
+		List<Iterable<T>> listOfIterables = new ArrayList<>();
+
+		Set<Class<?>> set = buildClassSet(startAt);
+
+		set.stream()
+				.map(fn)
+				.filter(Predicates.Iterables.isNonEmpty())
+				.forEach(listOfIterables::add);
+
+		return Iterables.concat(listOfIterables);
+	}
+
+	private Set<Class<?>> buildClassSet(Class<?> startAt) {
+		Set<Class<?>> setOfClasses = new HashSet<>();
+
+		Stack<Class<?>> unvisited = new Stack<>();
+		unvisited.add(startAt);
+		while (!unvisited.isEmpty()) {
+			Class<?> current = unvisited.pop();
+
+			setOfClasses.add(current);
+
+			if (includeInterfaces) {
+				addInterfaces(current).forEach(clz -> unvisited.push(clz));
+			}
+
+			if (includeSuperClasses) {
+				Optional.ofNullable(current.getSuperclass())
+						.ifPresent(unvisited::push);
+			}
+		}
+
+		return setOfClasses;
+	}
+
+	private Set<Class<?>> addInterfaces(Class<?> clz) {
+		return Sets.newHashSet(clz.getInterfaces());
+	}
 }

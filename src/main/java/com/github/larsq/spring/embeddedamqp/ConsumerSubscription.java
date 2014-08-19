@@ -24,28 +24,36 @@
 
 package com.github.larsq.spring.embeddedamqp;
 
-import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Consumer;
-import com.rabbitmq.client.Envelope;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 
 /**
  * Concrete implementation of a subscription with the {@link Consumer} as
- * callback interface. 
+ * callback interface.
+ *
  * @author Lars Eriksson (larsq.eriksson@gmail.com)
  */
-class ConsumerSubscription extends AbstractSubscription<Consumer>{
-    ConsumerSubscription(ChannelWrapper owner, String tag, Consumer instance) {
-        super(owner, tag, instance);
-    }
+class ConsumerSubscription extends AbstractSubscription<Consumer> {
+	private final static Logger LOG = LoggerFactory.getLogger(ConsumerSubscription.class.getPackage().getName());
 
-    /**
-     * 
-     * @param message the message to be delivered to the consumer
-     * @throws IOException
-     */
-    @Override
-    void onMessage(Message message) throws IOException {
-        instance().handleDelivery(tag(), message.getEnvelope(), message.getBasicProperties(), message.getPayload());    
-    }
+	ConsumerSubscription(Consumer instance) {
+		this(new ChannelWrapper(), "", instance);
+	}
+
+	ConsumerSubscription(ChannelWrapper owner, String tag, Consumer instance) {
+		super(owner, tag, instance);
+	}
+
+	/**
+	 * @param message the message to be delivered to the consumer
+	 * @throws IOException
+	 */
+	@Override
+	void onMessage(Message message) throws IOException {
+		LOG.debug("message delivered to : {} {} {}", owner(), tag(), instance());
+		instance().handleDelivery(tag(), message.getEnvelope(), message.getBasicProperties(), message.getPayload());
+	}
 }

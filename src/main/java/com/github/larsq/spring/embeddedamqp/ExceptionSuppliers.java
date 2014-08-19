@@ -28,50 +28,49 @@ import java.util.NoSuchElementException;
 import java.util.function.Supplier;
 
 /**
- *
  * @author Lars Eriksson (larsq.eriksson@gmail.com)
  */
 public class ExceptionSuppliers {
 
-    public final static ExceptionSuppliers Exception = new ExceptionSuppliers();
+	public final static ExceptionSuppliers Exception = new ExceptionSuppliers();
 
-    private Supplier<IllegalStateException> alreadyDefined(String name) {
-        return () -> new IllegalStateException(name);
-    }
+	private Supplier<IllegalStateException> alreadyDefined(String name) {
+		return () -> new IllegalStateException(name);
+	}
 
-    private Supplier<NoSuchElementException> notDefined(String name) {
-        return () -> new NoSuchElementException(name);
-    }
+	private Supplier<NoSuchElementException> notDefined(String name) {
+		return () -> new NoSuchElementException(name);
+	}
 
-    /**
-     * Supplier for IOException when exchange is not defined
-     *
-     * @param name the name of the non-existent exchange
-     * @return a supplier
-     */
-    public Supplier<IOException> exchangeNotFound(String name) {
-        return () -> new IOException("exchange is not defined", notDefined(name).get());
-    }
+	/**
+	 * Supplier for IOException when exchange is not defined
+	 *
+	 * @param name the name of the non-existent exchange
+	 * @return a supplier
+	 */
+	public Supplier<IOException> exchangeNotFound(String name) {
+		return () -> new IOException("exchange is not defined", notDefined(name).get());
+	}
 
-    public Supplier<IOException> routerNotFound(String name) {
-        return () -> new IOException("router of specified kind is not found" + name, notDefined(name).get());
-    }
+	public Supplier<IOException> routerNotFound(String name) {
+		return () -> new IOException("router of specified kind is not found" + name, notDefined(name).get());
+	}
 
-    /**
-     * Supplier for IOException when queue is not defined
-     *
-     * @param name the name of the non-existent queue
-     * @return a supplier
-     */
-    public Supplier<IOException> queueNotFound(String name) {
-        return () -> new IOException("queue is not defined", notDefined(name).get());
-    }
+	/**
+	 * Supplier for IOException when queue is not defined
+	 *
+	 * @param name the name of the non-existent queue
+	 * @return a supplier
+	 */
+	public Supplier<IOException> queueNotFound(String name) {
+		return () -> new IOException("queue is not defined", notDefined(name).get());
+	}
 
-    public Supplier<IOException> exchangeAlreadyExists(String name) {
-        return () -> new IOException("exchange already defined", alreadyDefined(name).get());
-    }
+	public Supplier<IOException> exchangeAlreadyExists(String name) {
+		return () -> new IOException("exchange already defined", alreadyDefined(name).get());
+	}
 
-    public Supplier<IOException> tagAlreadyExists(String name) {
-        return () -> new IOException("tag already defined", alreadyDefined(name).get());
-    }
+	public Supplier<IOException> tagAlreadyExists(String name) {
+		return () -> new IOException("tag already defined", alreadyDefined(name).get());
+	}
 }

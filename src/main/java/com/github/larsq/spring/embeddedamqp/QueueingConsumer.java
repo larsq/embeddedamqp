@@ -28,85 +28,87 @@ import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.ShutdownSignalException;
-import java.io.IOException;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
 /**
  * Consumer that stores the messages in a queue until its full capacity is reached.
+ *
  * @author Lars Eriksson (larsq.eriksson@gmail.com)
  */
 public class QueueingConsumer implements Consumer {
-    private final static Logger LOG = LoggerFactory.getLogger(QueueingConsumer.class.getPackage().getName());
-    private final BlockingQueue<Message> store;
-    private boolean enabled = true;
-    
-    BlockingQueue<Message> getStore() {
-        return store;
-    }
+	private final static Logger LOG = LoggerFactory.getLogger(QueueingConsumer.class.getPackage().getName());
+	private final BlockingQueue<Message> store;
+	private boolean enabled = true;
 
-    public void setEnabled(boolean enabled) {
-        if(this.enabled != enabled) {
-            LOG.debug("set new status: enabled is now {}", enabled);
-        }
-        
-        this.enabled = enabled;
-    }
+	public QueueingConsumer(int capacity, boolean isEnabled) {
+		this.store = new LinkedBlockingQueue<>(capacity);
+		this.enabled = isEnabled;
+	}
 
-    public boolean isEnabled() {
-        return enabled;
-    }
+	BlockingQueue<Message> getStore() {
+		return store;
+	}
 
-    public QueueingConsumer(int capacity, boolean isEnabled) {
-        this.store = new LinkedBlockingQueue<>(capacity);
-        this.enabled = isEnabled;
-    }
-    
-    @Override
-    public void handleConsumeOk(String consumerTag) {
-        this.enabled = true;
-    }
+	public boolean isEnabled() {
+		return enabled;
+	}
 
-    @Override
-    public void handleCancelOk(String consumerTag) {
-        this.enabled = false;
-    }
+	public void setEnabled(boolean enabled) {
+		if (this.enabled != enabled) {
+			LOG.debug("set new status: enabled is now {}", enabled);
+		}
 
-    @Override
-    public void handleCancel(String consumerTag) throws IOException {
-        this.enabled = false;
-    }
+		this.enabled = enabled;
+	}
 
-    @Override
-    public void handleShutdownSignal(String consumerTag, ShutdownSignalException sig) {
-    }
+	@Override
+	public void handleConsumeOk(String consumerTag) {
+		this.enabled = true;
+	}
 
-    @Override
-    public void handleRecoverOk(String consumerTag) {
-    }
+	@Override
+	public void handleCancelOk(String consumerTag) {
+		this.enabled = false;
+	}
 
-    @Override
-    public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
-        if(!enabled) {
-            LOG.warn("consumer is not enabled: ignoring message");
-            return;
-        }
-        
-        Message message = new Message(envelope, body, properties);
-        boolean added = store.add(message);
-        
-        if(!added) {
-            throw new IOException("cannot store message", new IllegalStateException());
-        }
-    }
-    
-    public void purge() {
-        store.clear();
-    }
-    
-    public int size() {
-        return store.size();
-    }
+	@Override
+	public void handleCancel(String consumerTag) throws IOException {
+		this.enabled = false;
+	}
+
+	@Override
+	public void handleShutdownSignal(String consumerTag, ShutdownSignalException sig) {
+	}
+
+	@Override
+	public void handleRecoverOk(String consumerTag) {
+	}
+
+	@Override
+	public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
+		if (!enabled) {
+			LOG.warn("consumer is not enabled: ignoring message");
+			return;
+		}
+
+		Message message = new Message(envelope, body, properties);
+		boolean added = store.add(message);
+
+		if (!added) {
+			throw new IOException("cannot store message", new IllegalStateException());
+		}
+	}
+
+	public void purge() {
+		store.clear();
+	}
+
+	public int size() {
+		return store.size();
+	}
 }

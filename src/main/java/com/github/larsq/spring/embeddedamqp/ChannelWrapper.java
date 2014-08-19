@@ -25,52 +25,59 @@
 package com.github.larsq.spring.embeddedamqp;
 
 import com.rabbitmq.client.Channel;
+
 import java.util.Objects;
 
 /**
- *
  * @author Lars Eriksson (larsq.eriksson@gmail.com)
  */
 class ChannelWrapper implements Comparable<ChannelWrapper> {
-    private final int channelNumber;
+	private final int channelNumber;
 
-    public static ChannelWrapper wrap(Channel channel) {
-        return new ChannelWrapper(channel.getChannelNumber());
-    }
-    
-    public ChannelWrapper(int channelNumber) {
-        this.channelNumber = channelNumber;
-    }
+	/**
+	 * Defines an internal owner for auto-created queues
+	 */
+	public ChannelWrapper() {
+		this(-1);
+	}
 
-    public int getChannelNumber() {
-        return channelNumber;
-    }
+	public ChannelWrapper(int channelNumber) {
+		this.channelNumber = channelNumber;
+	}
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null || obj == this) {
-            return obj == this;
-        }
-        if (!getClass().equals(obj.getClass())) {
-            return false;
-        }
-        ChannelWrapper other = getClass().cast(obj);
-        return channelNumber == other.channelNumber;
-    }
+	public static ChannelWrapper wrap(Channel channel) {
+		return new ChannelWrapper(channel.getChannelNumber());
+	}
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(channelNumber);
-    }
+	public int getChannelNumber() {
+		return channelNumber;
+	}
 
-    @Override
-    public int compareTo(ChannelWrapper o) {
-        return Integer.compare(channelNumber, o.channelNumber);
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null || obj == this) {
+			return obj == this;
+		}
+		if (!getClass().equals(obj.getClass())) {
+			return false;
+		}
+		ChannelWrapper other = getClass().cast(obj);
+		return channelNumber == other.channelNumber;
+	}
 
-    @Override
-    public String toString() {
-        return String.format("%s{%s}", getClass().getSimpleName(), channelNumber);
-    }
-    
+	@Override
+	public int hashCode() {
+		return Objects.hash(channelNumber);
+	}
+
+	@Override
+	public int compareTo(ChannelWrapper o) {
+		return Integer.compare(channelNumber, o.channelNumber);
+	}
+
+	@Override
+	public String toString() {
+		return String.format("%s{%s}", getClass().getSimpleName(), channelNumber);
+	}
+
 }

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2014 Lars Eriksson (larsq.eriksson@gmail.com).
+ * Copyright 2014 lars.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,51 +24,16 @@
 
 package com.github.larsq.spring.embeddedamqp;
 
-import com.google.common.collect.Ordering;
-
-import java.util.Objects;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.ImportResource;
 
 /**
- * Internal class that encapsulates the exchange and a router strategy.
- *
- * @author Lars Eriksson (larsq.eriksson@gmail.com)
+ * @author lars
  */
-class ExchangeWrapper implements Comparable<ExchangeWrapper> {
-	final String name;
-	final AbstractExchangeRouter router;
-
-	public <E extends AbstractExchangeRouter> ExchangeWrapper(String name, E exchange) {
-		this.name = name;
-		this.router = exchange;
-	}
-
-	AbstractExchangeRouter exchange() {
-		return router;
-	}
-
-	String name() {
-		return name;
-	}
-
-	@Override
-	public int compareTo(ExchangeWrapper o) {
-		return Ordering.natural().nullsFirst().compare(name(), o.name());
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (obj == null || obj == this) {
-			return obj == this;
-		}
-		if (getClass() != obj.getClass()) {
-			return false;
-		}
-		return Objects.equals(name(), getClass().cast(obj).name());
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hashCode(name());
-	}
+@Configuration
+@ComponentScan
+@ImportResource(value = "classpath*:test-context.xml")
+public class TestConfig {
 
 }

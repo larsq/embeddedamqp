@@ -27,55 +27,56 @@ import java.io.IOException;
 import java.util.Objects;
 
 /**
- * This class is the base class for subscription. A subscription denotes the 
+ * This class is the base class for subscription. A subscription denotes the
  * tuple of the callback interface and the service tag that identifies the client.
  * This release does not support any additional properties of a subscription such
  * as no local
- * @author Lars Erikssson
+ *
  * @param <T>
+ * @author Lars Erikssson
  */
 abstract class AbstractSubscription<T> {
-    private final ChannelWrapper owner;
-    private final String tag;
-    private final T instance;
+	private final ChannelWrapper owner;
+	private final String tag;
+	private final T instance;
 
-    AbstractSubscription(ChannelWrapper owner, String tag, T instance) {
-        this.tag = tag;
-        this.instance = instance;
-        this.owner = owner;
-    }
+	AbstractSubscription(ChannelWrapper owner, String tag, T instance) {
+		this.tag = tag;
+		this.instance = instance;
+		this.owner = owner;
+	}
 
-    abstract void onMessage(Message message) throws IOException;
-    
-    ChannelWrapper owner() {
-        return owner;
-    }
-    
-    String tag() {
-        return tag;
-    }
-    
-    T instance() {
-        return instance;
-    }
+	abstract void onMessage(Message message) throws IOException;
 
-    @Override
-    public boolean equals(Object obj) {
-        if(obj == null || obj == this) {
-            return this == obj;
-        }
-        
-        if(!getClass().equals(obj.getClass())) {
-            return false;
-        }
-        
-        AbstractSubscription other = getClass().cast(obj);
-        
-        return Objects.equals(tag, other.tag);
-    }
+	ChannelWrapper owner() {
+		return owner;
+	}
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(tag);
-    }
+	String tag() {
+		return tag;
+	}
+
+	T instance() {
+		return instance;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null || obj == this) {
+			return this == obj;
+		}
+
+		if (!getClass().equals(obj.getClass())) {
+			return false;
+		}
+
+		AbstractSubscription other = getClass().cast(obj);
+
+		return Objects.equals(tag, other.tag);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(tag);
+	}
 }
