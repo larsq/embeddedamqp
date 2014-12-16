@@ -360,6 +360,8 @@ public class SimpleAmqpMessageContainer {
 		ExchangeWrapper exchangeWrapper = exchange(address.getExchangeName())
 				.orElseThrow(Exception.exchangeNotFound(address.getExchangeName()));
 
+		exchangeWrapper.counter.incrementAndGet();
+
 		exchangeWrapper.router.route(exchangeWrapper, address.getRoutingKey(), message);
 	}
 
@@ -367,6 +369,8 @@ public class SimpleAmqpMessageContainer {
 		if (binding.isExchangeDestination()) {
 			ExchangeWrapper exchange = exchange(binding.destination)
 					.orElseThrow(Exception.exchangeNotFound(binding.destination));
+
+			exchange.counter.incrementAndGet();
 
 			exchange.router.route(exchange, routingKey, message);
 		}

@@ -79,11 +79,23 @@
             <groupId>org.springframework.integration</groupId>
             <artifactId>spring-integration-test</artifactId>
             <version>4.0.3.RELEASE</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jooq</groupId>
+            <artifactId>jool</artifactId>
+            <version>0.9.3</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.1.2</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

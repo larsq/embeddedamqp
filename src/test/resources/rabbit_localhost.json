@@ -1,0 +1,227 @@
+{
+    "rabbit_version": "3.3.5",
+    "users": [
+
+    ],
+    "vhosts": [
+        {
+            "name": "ab"
+        },
+        {
+            "name": "/"
+        }
+    ],
+    "permissions": [
+    ],
+    "parameters": [],
+    "policies": [],
+    "queues": [
+        {
+            "name": "q_play.updated_object.section",
+            "vhost": "ab",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {}
+        },
+        {
+            "name": "q_play.changelog.article",
+            "vhost": "ab",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {}
+        },
+        {
+            "name": "q_play.updated_object.article",
+            "vhost": "ab",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {}
+        },
+        {
+            "name": "q_play.changelog.section",
+            "vhost": "ab",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {}
+        },
+        {
+            "name": "q_api.updated_object.section",
+            "vhost": "ab",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {}
+        },
+        {
+            "name": "q_play.errors",
+            "vhost": "ab",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-message-ttl": 10000,
+                "x-dead-letter-exchange": "changelog"
+            }
+        },
+        {
+            "name": "q_play.update_object.section",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {}
+        }
+    ],
+    "exchanges": [
+        {
+            "name": "updated_object",
+            "vhost": "ab",
+            "type": "fanout",
+            "durable": true,
+            "auto_delete": false,
+            "internal": false,
+            "arguments": {}
+        },
+        {
+            "name": "indexed_object",
+            "vhost": "ab",
+            "type": "headers",
+            "durable": true,
+            "auto_delete": false,
+            "internal": false,
+            "arguments": {}
+        },
+        {
+            "name": "play_changelog",
+            "vhost": "ab",
+            "type": "headers",
+            "durable": true,
+            "auto_delete": false,
+            "internal": false,
+            "arguments": {}
+        },
+        {
+            "name": "api_updated_object",
+            "vhost": "ab",
+            "type": "headers",
+            "durable": true,
+            "auto_delete": false,
+            "internal": false,
+            "arguments": {}
+        },
+        {
+            "name": "error",
+            "vhost": "ab",
+            "type": "fanout",
+            "durable": true,
+            "auto_delete": false,
+            "internal": false,
+            "arguments": {}
+        },
+        {
+            "name": "changelog",
+            "vhost": "ab",
+            "type": "fanout",
+            "durable": true,
+            "auto_delete": false,
+            "internal": false,
+            "arguments": {}
+        },
+        {
+            "name": "play_updated_object",
+            "vhost": "ab",
+            "type": "headers",
+            "durable": true,
+            "auto_delete": false,
+            "internal": false,
+            "arguments": {}
+        }
+    ],
+    "bindings": [
+        {
+            "source": "api_updated_object",
+            "vhost": "ab",
+            "destination": "q_api.updated_object.article",
+            "destination_type": "queue",
+            "routing_key": "",
+            "arguments": {
+                "ab_type": "ArticleUpdate"
+            }
+        },
+        {
+            "source": "api_updated_object",
+            "vhost": "ab",
+            "destination": "q_api.updated_object.section",
+            "destination_type": "queue",
+            "routing_key": "",
+            "arguments": {
+                "ab_type": "SectionUpdate"
+            }
+        },
+        {
+            "source": "changelog",
+            "vhost": "ab",
+            "destination": "play_changelog",
+            "destination_type": "exchange",
+            "routing_key": "",
+            "arguments": {}
+        },
+        {
+            "source": "error",
+            "vhost": "ab",
+            "destination": "q_play.errors",
+            "destination_type": "queue",
+            "routing_key": "",
+            "arguments": {}
+        },
+        {
+            "source": "play_changelog",
+            "vhost": "ab",
+            "destination": "q_play.changelog.article",
+            "destination_type": "queue",
+            "routing_key": "",
+            "arguments": {
+                "ab_source": "play",
+                "ab_type": "ArticleUpdate"
+            }
+        },
+        {
+            "source": "play_changelog",
+            "vhost": "ab",
+            "destination": "q_play.changelog.section",
+            "destination_type": "queue",
+            "routing_key": "",
+            "arguments": {
+                "ab_source": "play",
+                "ab_type": "SectionUpdate"
+            }
+        },
+        {
+            "source": "play_updated_object",
+            "vhost": "ab",
+            "destination": "q_play.updated_object.article",
+            "destination_type": "queue",
+            "routing_key": "",
+            "arguments": {
+                "ab_source": "play",
+                "ab_type": "ArticleUpdate"
+            }
+        },
+        {
+            "source": "play_updated_object",
+            "vhost": "ab",
+            "destination": "q_play.updated_object.section",
+            "destination_type": "queue",
+            "routing_key": "",
+            "arguments": {
+                "ab_source": "play",
+                "ab_type": "SectionUpdate"
+            }
+        },
+        {
+            "source": "updated_object",
+            "vhost": "ab",
+            "destination": "api_updated_object",
+            "destination_type": "exchange",
+            "routing_key": "",
+            "arguments": {}
+        }
+    ]
+}

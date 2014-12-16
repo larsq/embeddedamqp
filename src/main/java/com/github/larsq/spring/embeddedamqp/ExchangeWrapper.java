@@ -27,6 +27,7 @@ package com.github.larsq.spring.embeddedamqp;
 import com.google.common.collect.Ordering;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Internal class that encapsulates the exchange and a router strategy.
@@ -36,6 +37,7 @@ import java.util.Objects;
 class ExchangeWrapper implements Comparable<ExchangeWrapper> {
 	final String name;
 	final AbstractExchangeRouter router;
+	final AtomicInteger counter = new AtomicInteger(0);
 
 	public <E extends AbstractExchangeRouter> ExchangeWrapper(String name, E exchange) {
 		this.name = name;

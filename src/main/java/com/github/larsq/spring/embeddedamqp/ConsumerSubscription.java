@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Concrete implementation of a subscription with the {@link Consumer} as
@@ -37,6 +38,7 @@ import java.io.IOException;
  * @author Lars Eriksson (larsq.eriksson@gmail.com)
  */
 class ConsumerSubscription extends AbstractSubscription<Consumer> {
+	private final AtomicInteger counter = new AtomicInteger();
 	private final static Logger LOG = LoggerFactory.getLogger(ConsumerSubscription.class.getPackage().getName());
 
 	ConsumerSubscription(Consumer instance) {
@@ -53,6 +55,8 @@ class ConsumerSubscription extends AbstractSubscription<Consumer> {
 	 */
 	@Override
 	void onMessage(Message message) throws IOException {
+		counter.incrementAndGet();
+
 		LOG.debug("message delivered to : {} {} {}", owner(), tag(), instance());
 		instance().handleDelivery(tag(), message.getEnvelope(), message.getBasicProperties(), message.getPayload());
 	}

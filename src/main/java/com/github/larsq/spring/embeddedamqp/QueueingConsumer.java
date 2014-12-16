@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Consumer that stores the messages in a queue until its full capacity is reached.
@@ -42,6 +43,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class QueueingConsumer implements Consumer {
 	private final static Logger LOG = LoggerFactory.getLogger(QueueingConsumer.class.getPackage().getName());
+	private final static AtomicInteger counter = new AtomicInteger(0);
 	private final BlockingQueue<Message> store;
 	private boolean enabled = true;
 
@@ -99,8 +101,11 @@ public class QueueingConsumer implements Consumer {
 		Message message = new Message(envelope, body, properties);
 		boolean added = store.add(message);
 
+
 		if (!added) {
 			throw new IOException("cannot store message", new IllegalStateException());
+		} else {
+			counter.incrementAndGet();
 		}
 	}
 
